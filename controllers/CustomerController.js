@@ -33,6 +33,46 @@ class CustomerController {
     }
   };
 
+  multipleUploads = async (req, res) => {
+    try {
+      const { layanan, idpl, joinDate, hp, address, email, name, company } =
+        req.body;
+
+      const spk = req.files.spk ? req.files.spk[0].filename : null;
+      console.log("spk", spk);
+      const kwitansi = req.files.kwitansi
+        ? req.files.kwitansi[0].filename
+        : null;
+      const sj = req.files.sj ? req.files.sj[0].filename : null;
+      const oha = req.files.oha ? req.files.oha[0].filename : null;
+      console.log("sj", sj);
+
+      const keterangan = req.body.keterangan || "aktif";
+      const status = req.body.status || "reguler";
+
+      const customer = await Customer.create({
+        ...req.body,
+        keterangan: keterangan,
+        status: status,
+        spk: spk,
+        kwitansi: kwitansi,
+        sj: sj,
+        oha,
+        oha,
+        idpl: `Cust` + (Math.floor(Math.random() * 1000000) + 1000000),
+      });
+
+      res
+        .status(201)
+        .json(
+          Response.successResponse({ customer }, "Success create customer")
+        );
+    } catch (err) {
+      res.status(500).json(Response.errorResponse(err.message));
+      console.log(err);
+    }
+  };
+
   // find all customer
   Find = async (req, res) => {
     try {
@@ -71,11 +111,15 @@ class CustomerController {
 
   Update = async (req, res) => {
     try {
-      const id = req.params.id;
-      // console.log({ id });
+      const customerId = req.params.id;
+      const customer = await Customer.findOne({ _id: customerId });
+      if (!customer) {
+        return res
+          .status(404)
+          .json(Response.errorResponse("Customer not found"));
+      }
+
       const {
-        keterangan,
-        status,
         layanan,
         idpl,
         joinDate,
@@ -84,22 +128,46 @@ class CustomerController {
         email,
         name,
         company,
+        status,
+        keterangan,
       } = req.body;
-      // console.log("body", req.body);
-      const customer = await Customer.findByIdAndUpdate(
-        { _id: id },
-        {
-          ...req.body,
-        },
-        { new: true } //agar mengembalikan dokumen yang baru
+
+      const updatedData = {
+        layanan,
+        idpl,
+        joinDate,
+        hp,
+        address,
+        email,
+        name,
+        company,
+        status: status || customer.status,
+        keterangan: keterangan || customer.keterangan,
+        spk: req.files.spk ? req.files.spk[0].filename : customer.spk,
+        kwitansi: req.files.kwitansi
+          ? req.files.kwitansi[0].filename
+          : customer.kwitansi,
+        sj: req.files.sj ? req.files.sj[0].filename : customer.sj,
+        oha: req.files.oha ? req.files.oha[0].filename : customer.oha,
+      };
+
+      const updatedCustomer = await Customer.findOneAndUpdate(
+        { _id: customerId },
+        updatedData,
+        { new: true }
       );
+
       res
-        .status(201)
+        .status(200)
         .json(
-          Response.successResponse({ customer }, "Success Update customer")
+          Response.successResponse(
+            { customer: updatedCustomer },
+            "Success update customer"
+          )
         );
     } catch (err) {
       res.status(500).json(Response.errorResponse(err.message));
+      console.log(err);
     }
   };
 

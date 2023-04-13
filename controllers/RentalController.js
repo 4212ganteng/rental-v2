@@ -43,7 +43,7 @@ class RentalController {
         customer: customer._id,
         duration: req.body.duration,
         durationUnit: req.body.durationUnit,
-        values: product.price * req.body.duration,
+        values: req.body.values,
         keterangan: keterangan,
         startDate: startDate,
         endDate: endDate,
@@ -80,7 +80,7 @@ class RentalController {
       const startIndex = (page - 1) * limit;
       const endIndex = page * limit;
 
-      const rentals = await Rental.find()
+      const rentals = await HistoryCard.find()
         .populate("product")
         .populate("product.merek")
         .populate("customer")
@@ -261,6 +261,41 @@ class RentalController {
               history: history,
             },
             "Success update Rental"
+          )
+        );
+      } catch (err) {
+        res.status(500).json(Response.errorResponse(err.message));
+      }
+    }
+  };
+  //   tarik
+  Tarik = async (req, res) => {
+    {
+      try {
+        const id = req.params.id;
+
+        const detail = await Rental.findById(id);
+        // update status mesin lama
+        const productdata = await Product.findByIdAndUpdate(
+          { _id: detail.product },
+          { status: "ready" },
+          { new: true }
+        );
+
+        const cust = await Customer.findByIdAndUpdate(
+          { _id: detail.customer },
+          { keterangan: "off" },
+          { new: true }
+        );
+
+        res.status(201).json(
+          Response.successResponse(
+            {
+              oldData: detail,
+              changeOldstatus: productdata,
+              customer: cust,
+            },
+            "Success Tarik Rental"
           )
         );
       } catch (err) {

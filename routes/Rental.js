@@ -11,6 +11,8 @@ router.get("/", RentalController.getAllRentals);
 router.get("/detail/:id", RentalController.getRentalById);
 // update
 router.patch("/update/:id", RentalController.UpdateRental);
+// tarik mesin
+router.patch("/tarik/:id", RentalController.Tarik);
 // delete
 router.delete("/delete/:id", RentalController.deleteRental);
 // find by mesin

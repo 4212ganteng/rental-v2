@@ -57,6 +57,18 @@ const CustomerSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    kwitansi: {
+      type: String,
+      default: "",
+    },
+    sj: {
+      type: String,
+      default: "",
+    },
+    oha: {
+      type: String,
+      default: "",
+    },
   },
 
   { timestamps: true }
