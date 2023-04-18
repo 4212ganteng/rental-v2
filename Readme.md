@@ -28,3 +28,6 @@ PS adalah singkatan dari penjual (seller).
 XXXXXXX adalah nomor acak antara 1.000.000 dan 1.999.999 dalam bentuk string.
 Contoh hasil akhir dari kode tersebut bisa seperti ini: INV/20220329/PS/1358207 yang menunjukkan bahwa ini adalah invoice untuk transaksi pada tanggal 29 Maret 2023 dengan nomor acak 1358207 dan penjualnya adalah PS.
 ```
+
+/////////automate count total
+Pada contoh di atas, pre-save middleware yang dijalankan akan mengambil nilai pemakaian dan tagihan pada dokumen Tagihan dan menambahkan nilai tersebut ke dalam field totalPakai dan totalTagihan masing-masing. Setelah itu, middleware akan memanggil fungsi next() untuk melanjutkan proses penyimpanan dokumen ke database. Dengan begitu, setiap kali ada data inputan/create, nilai total akan dihitung secara otomatis dan disimpan ke dalam field totalTagihan.

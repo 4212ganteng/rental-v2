@@ -23,5 +23,6 @@ router.get("/track/:cust", RentalController.searchCustRent);
 router.get("/filter-date", RentalController.filterPerMonth);
 
 router.get("/report-excel", RentalController.exportExel);
+router.post("/tagihan/:id", RentalController.TagihanRental);
 
 export default router;

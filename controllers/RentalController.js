@@ -7,6 +7,7 @@ import TypeMesin from "../models/TypeMesin.js";
 import moment from "moment/moment.js";
 import Penjualan from "../models/Penjualan.js";
 import ExcelJS from "exceljs";
+import Tagihan from "../models/Tagihan.js";
 
 class RentalController {
   // create rental
@@ -32,6 +33,12 @@ class RentalController {
       if (!customer) {
         return res.status(404).json({ message: "Customer not found" });
       }
+      const updateCustomers = await Customer.findByIdAndUpdate(
+        { _id: customerId },
+        { keterangan: "aktif" },
+        { new: true }
+      );
+
       const updateStatus = await Product.findByIdAndUpdate(
         { _id: productId },
         { status: status },
@@ -55,7 +62,7 @@ class RentalController {
         customer: customer._id,
         duration: req.body.duration,
         durationUnit: req.body.durationUnit,
-        values: product.price * req.body.duration,
+        values: req.body.values,
         startDate: startDate,
         endDate: endDate,
       });
@@ -163,7 +170,7 @@ class RentalController {
   // get rental by id
   getRentalById = async (req, res) => {
     try {
-      const rental = await Rental.findById(req.params.id)
+      const rental = await HistoryCard.findById(req.params.id)
         .populate("product")
         .populate("customer");
 
@@ -172,7 +179,8 @@ class RentalController {
       }
       let merekId = rental.product.merek;
       const merek = await TypeMesin.findById(merekId);
-      res.json({ rental, merek });
+      const tagihan = await Tagihan.find({ rental: req.params.id });
+      res.json({ rental, merek, tagihan });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });
@@ -200,7 +208,8 @@ class RentalController {
         const newStatus = req.body.newStatus || "rent";
         const status = req.body.status || "ready";
         //  get detail
-        const detail = await Rental.findById(id);
+        const detail = await HistoryCard.findById(id);
+        console.log("detail", detail);
         // update status mesin lama
         const productdata = await Product.findByIdAndUpdate(
           { _id: detail.product },
@@ -265,6 +274,7 @@ class RentalController {
         );
       } catch (err) {
         res.status(500).json(Response.errorResponse(err.message));
+        console.log(err);
       }
     }
   };
@@ -274,7 +284,8 @@ class RentalController {
       try {
         const id = req.params.id;
 
-        const detail = await Rental.findById(id);
+        const detail = await HistoryCard.findById(id);
+        console.log("detailll", detail);
         // update status mesin lama
         const productdata = await Product.findByIdAndUpdate(
           { _id: detail.product },
@@ -394,6 +405,31 @@ class RentalController {
       const data = await workbook.xlsx.writeFile(`${path}/rental.xlsx`);
       return res.json({ status: "success", path: `${path}/rental.xlsx` });
     } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  };
+
+  TagihanRental = async (req, res) => {
+    try {
+      const id = req.params.id;
+      const { pemakaian, tagihan } = req.body;
+      console.log(req.body);
+      const datarental = await HistoryCard.findById(id);
+      const productId = datarental.product;
+      const customerId = datarental.customer;
+      const datatagihhan = await Tagihan.create({
+        pemakaian: pemakaian,
+        tagihan: tagihan,
+        productId: productId,
+        customerId: customerId,
+        rental: id,
+      });
+      return res.json({
+        message: " berhasil tambah tagihan dan pemakaian",
+        data: datatagihhan,
+      });
+    } catch (error) {
+      console.log(error);
       return res.status(500).json({ message: error.message });
     }
   };
